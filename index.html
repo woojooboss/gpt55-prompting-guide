@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GPT-5.5 프롬프팅 가이드(Official) · 우주보스</title>
+<meta name="description" content="OpenAI 공식 GPT-5.5 프롬프팅 가이드의 한국어 번역. 결과 중심 프롬프트, 페르소나 설계, 검증 루프, phase 파라미터까지 빠짐없이 정리." />
+<meta name="theme-color" content="#FAF6EC" />
+<meta property="og:type" content="article" />
+<meta property="og:title" content="GPT-5.5 프롬프팅 가이드(Official)" />
+<meta property="og:description" content="OpenAI 공식 GPT-5.5 프롬프팅 가이드 전문 한국어 번역. 결과 중심 프롬프트, 페르소나, 검증 루프, phase 파라미터." />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="GPT-5.5 프롬프팅 가이드(Official)" />
+<meta name="twitter:description" content="OpenAI 공식 GPT-5.5 프롬프팅 가이드 전문 한국어 번역." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📘%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="./profile.png" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  :root{
+    --bg:#FAF6EC; --bg-card:#FFFDF7; --line:#E8E1D0;
+    --ink:#1A1A1A; --ink-soft:#5A5548; --ink-mute:#8C8672;
+    --accent:#CAAA44; --accent-soft:#E7D48A;
+    --code-bg:#1F1B14; --code-ink:#F5EFD8; --code-line:#3A3325;
+    --shadow:0 1px 2px rgba(30,25,10,.04), 0 8px 24px rgba(30,25,10,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;overflow-x:hidden}
+  html{scroll-behavior:smooth; scroll-padding-top:80px}
+  body{
+    font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.75;
+    -webkit-font-smoothing:antialiased;
+    font-feature-settings:"ss01","ss02";
+  }
+  .container{max-width:1200px;margin:0 auto;padding:0 24px}
+  @media (max-width:640px){ .container{padding:0 18px} }
+
+  header.top{padding:28px 0 18px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(250,246,236,.92);backdrop-filter:saturate(140%) blur(8px);z-index:50}
+  .top-row{display:flex;align-items:center;justify-content:space-between;gap:24px}
+  .brand{display:flex;flex-direction:column;gap:2px}
+  .brand .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:600}
+  .brand h1{margin:0;font-size:clamp(20px,2.6vw,28px);font-weight:700;letter-spacing:-.02em}
+  .brand h1 .num{color:var(--accent);font-weight:800}
+  .source-link{display:inline-flex;align-items:center;height:44px;font-size:12px;color:var(--ink-mute);text-decoration:none;border:1px solid var(--line);padding:0 16px;border-radius:999px;background:var(--bg-card);transition:.15s;line-height:1}
+  .source-link:hover{border-color:var(--accent);color:var(--ink)}
+
+  .top-cta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+  .gift-banner{
+    display:inline-flex;align-items:center;gap:10px;height:44px;
+    background:linear-gradient(135deg,#141110 0%,#25201a 100%);
+    color:#fff;text-decoration:none;
+    padding:0 14px 0 6px;border-radius:999px;
+    border:1px solid rgba(202,170,68,.22);
+    box-shadow:0 6px 18px -10px rgba(26,22,19,.45);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    line-height:1;
+  }
+  .gift-banner:hover{transform:translateY(-1px);box-shadow:0 10px 22px -10px rgba(26,22,19,.55);border-color:rgba(202,170,68,.45)}
+  .gift-icon{
+    width:28px;height:28px;border-radius:50%;
+    background:linear-gradient(135deg,var(--accent) 0%,#a8842c 100%);
+    color:#1a1613;font-weight:800;font-size:13px;
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .gift-text{display:flex;flex-direction:column;min-width:0}
+  .gift-label{color:var(--accent);font-size:10px;font-weight:600;letter-spacing:.04em}
+  .gift-title{color:#fff;font-size:13px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+  .gift-arrow{color:var(--accent);font-size:15px;margin-left:2px;transition:transform .18s ease}
+  .gift-banner:hover .gift-arrow{transform:translateX(3px)}
+  @media (max-width:720px){
+    .top-row{flex-wrap:wrap;gap:14px}
+    .top-cta{width:100%;justify-content:flex-start}
+    .gift-title{white-space:normal}
+  }
+
+  .hero{padding:56px 0 24px;border-bottom:1px solid var(--line)}
+  .hero .kicker{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  .hero h2{font-size:clamp(32px,4.4vw,52px);margin:14px 0 14px;font-weight:800;letter-spacing:-.025em;line-height:1.15}
+  .hero p.lede{font-size:17px;color:var(--ink-soft);max-width:780px;margin:0}
+  .hero .meta{margin-top:22px;display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:12px;color:var(--ink-soft);background:var(--bg-card);border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+
+  .layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:48px;padding:40px 0 80px}
+  @media (max-width:980px){.layout{grid-template-columns:1fr;gap:24px}}
+
+  aside.toc{position:sticky;top:96px;align-self:start;max-height:calc(100vh - 120px);overflow:auto;padding-right:8px}
+  aside.toc .toc-title{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute);font-weight:700;margin:0 0 12px}
+  aside.toc ol{list-style:none;padding:0;margin:0;border-left:1px solid var(--line)}
+  aside.toc li{margin:0}
+  aside.toc a{display:block;padding:6px 14px;font-size:13px;color:var(--ink-soft);text-decoration:none;border-left:2px solid transparent;margin-left:-1px;transition:.15s}
+  aside.toc a:hover{color:var(--ink);border-left-color:var(--accent-soft)}
+  aside.toc a.active{color:var(--accent);border-left-color:var(--accent);font-weight:600;background:rgba(202,170,68,.06)}
+  aside.toc a.lvl3{padding-left:28px;font-size:12px;color:var(--ink-mute)}
+  @media (max-width:980px){aside.toc{position:static;max-height:none;border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--bg-card)} aside.toc ol{border-left:none}}
+
+  article{min-width:0;font-size:16px}
+  article h2{font-size:30px;font-weight:800;letter-spacing:-.02em;margin:64px 0 16px;padding-top:12px;line-height:1.3}
+  article h2:first-of-type{margin-top:0}
+  article h3{font-size:21px;font-weight:700;margin:40px 0 12px;letter-spacing:-.01em}
+  article p{margin:14px 0;color:#222}
+  article strong{color:var(--ink);font-weight:700}
+  article ul{margin:14px 0;padding-left:22px}
+  article li{margin:6px 0}
+  article li::marker{color:var(--accent)}
+  article a{color:var(--accent);text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
+  article a:hover{color:#9c8330}
+  article code:not(pre code){background:#F1ECDC;padding:2px 7px;border-radius:6px;font-family:ui-monospace,'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;font-size:.88em;color:#5d4d18;border:1px solid #E5DCBE}
+
+  .cb{position:relative;margin:18px 0;border-radius:12px;background:var(--code-bg);border:1px solid var(--code-line);overflow:hidden;box-shadow:var(--shadow);min-width:0;max-width:100%}
+  .cb-head{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;border-bottom:1px solid var(--code-line);background:rgba(255,255,255,.03)}
+  .cb-label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#B8AC85;font-weight:600}
+  .cb-copy{appearance:none;border:1px solid #4a4128;background:transparent;color:#D9CFA6;font-size:11px;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:inherit;transition:.15s}
+  .cb-copy:hover{background:#3a3325;color:#fff;border-color:#665838}
+  .cb-copy.ok{background:var(--accent);color:#1F1B14;border-color:var(--accent)}
+  .cb pre{margin:0;padding:16px 18px;overflow:auto;font-family:ui-monospace,'JetBrains Mono','SF Mono',Menlo,Consolas,monospace;font-size:13.5px;line-height:1.65;color:var(--code-ink);white-space:pre}
+
+  .callout{margin:22px 0;padding:18px 20px;background:var(--bg-card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px}
+  .callout .ctitle{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);font-weight:700;margin-bottom:6px}
+  .callout p{margin:6px 0}
+
+  footer.bottom{border-top:1px solid var(--line);padding:36px 0 60px;color:var(--ink-mute);font-size:13px}
+  footer.bottom a{color:var(--ink-soft);text-decoration:none;border-bottom:1px solid var(--line)}
+  footer.bottom a:hover{color:var(--accent);border-bottom-color:var(--accent)}
+
+  ::selection{background:var(--accent-soft);color:#1A1A1A}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="container top-row">
+    <div class="brand">
+      <span class="eyebrow">OPENAI · KOREAN TRANSLATION</span>
+      <h1><span class="num">GPT-5.5</span> 프롬프팅 가이드(Official)</h1>
+    </div>
+    <div class="top-cta">
+      <a class="gift-banner" href="https://blog.naver.com/woojooboss/223558177937" target="_blank" rel="noopener" aria-label="우주보스의 선물 — 10GB 분량의 무료 콘텐츠 소스팩 받기">
+        <span class="gift-icon" aria-hidden="true">G</span>
+        <span class="gift-text">
+          <span class="gift-label">우주보스의 선물</span>
+          <span class="gift-title">10GB 분량의 무료 콘텐츠 소스팩 받기</span>
+        </span>
+        <span class="gift-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="source-link" href="https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5" target="_blank" rel="noopener">원문 보기 ↗</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="container">
+    <div class="kicker">PROMPTING GUIDE · v5.5</div>
+    <h2>결과를 정의하고, 모델에게 길을 맡겨라</h2>
+    <p class="lede">GPT-5.5는 과정을 일일이 지시하기보다 <strong>원하는 결과·성공 기준·제약·근거</strong>를 명확히 정의했을 때 가장 잘 동작합니다. 이 페이지는 OpenAI 공식 가이드의 GPT-5.5 섹션 전문을 한국어로 번역한 문서입니다.</p>
+    <div class="meta">
+      <span class="chip">결과 중심 프롬프트</span>
+      <span class="chip">페르소나 설계</span>
+      <span class="chip">검증 루프</span>
+      <span class="chip">phase 파라미터</span>
+      <span class="chip">retrieval budget</span>
+    </div>
+  </div>
+</section>
+
+<div class="container layout">
+  <aside class="toc" aria-label="목차">
+    <p class="toc-title">목차</p>
+    <ol id="toc">
+      <li><a href="#intro">GPT-5.4 대비 새로워진 점</a></li>
+      <li><a href="#codex-migration">Codex로 자동 마이그레이션</a></li>
+      <li><a href="#personality">페르소나와 행동</a></li>
+      <li><a href="#preamble">프리앰블로 첫 토큰까지의 시간 단축</a></li>
+      <li><a href="#outcome-first">결과 중심 프롬프트와 정지 조건</a></li>
+      <li><a href="#formatting">서식(Formatting)</a></li>
+      <li><a href="#grounding">근거·인용·검색 예산</a>
+        <ol><li><a class="lvl3" href="#retrieval-budget">명시적 검색 예산 추가</a></li></ol>
+      </li>
+      <li><a href="#creative">크리에이티브 작성 가드레일</a></li>
+      <li><a href="#frontend">프론트엔드 엔지니어링과 비주얼 감각</a></li>
+      <li><a href="#check-work">모델에게 결과를 검증하도록 지시</a></li>
+      <li><a href="#phase">phase 파라미터</a></li>
+      <li><a href="#structure">권장 프롬프트 구조</a></li>
+    </ol>
+  </aside>
+
+  <article>
+
+  <section id="intro">
+    <h2>GPT-5.4 대비 새로워진 점</h2>
+    <ul>
+      <li>과정 중심으로 두껍게 쌓아 올린 프롬프트보다, <strong>짧고 결과 중심으로 작성한 프롬프트</strong>가 대체로 더 잘 동작합니다.</li>
+      <li>추론이 한층 효율화되었기 때문에 <code>low</code>·<code>medium</code> 추론 노력 값을 더 높이기 전에 다시 평가해 보세요.</li>
+      <li>도구 호출이 많은 Responses 워크플로에서는 여전히 <strong>프리앰블, <code>phase</code> 처리, 어시스턴트 아이템 리플레이</strong>가 중요합니다.</li>
+      <li>고객을 직접 마주하는 제품과 에이전트형 UX에서는 <strong>명시적인 페르소나, 검색 예산, 검증 규칙</strong>이 경험을 다듬는 데 도움이 됩니다.</li>
+    </ul>
+
+    <p>GPT-5.5는 프롬프트가 결과(outcome)를 정의하고, 효율적인 해결 경로는 모델이 직접 선택할 여지를 남길 때 가장 좋은 성능을 냅니다. 이전 세대 모델들에 비해 더 짧고 결과 지향적인 프롬프트를 사용해도 충분합니다. 즉 <strong>"잘 된 결과란 무엇인지", "어떤 제약이 중요한지", "어떤 근거가 주어지는지", "최종 답변에 무엇이 담겨야 하는지"</strong>를 기술하면 됩니다.</p>
+
+    <p>예전 프롬프트 스택의 모든 지시문을 그대로 가져오지 마세요. 과거 모델은 궤도를 유지하기 위해 더 많은 도움이 필요했기 때문에, 옛 프롬프트는 종종 과정을 과하게 지정합니다. GPT-5.5에서는 그것이 오히려 노이즈가 되어 모델의 탐색 공간을 좁히거나 답변을 지나치게 기계적으로 만들 수 있습니다.</p>
+
+    <p>GPT-5.5의 동작 변화에 대한 자세한 내용은 <a href="https://developers.openai.com/api/docs/guides/latest-model" target="_blank" rel="noopener">Using GPT-5.5 가이드</a>에서 시작하세요. 이 가이드는 그 동작 변화에 따라 달라져야 할 <strong>프롬프트 작성 방식</strong>에 초점을 둡니다.</p>
+
+    <p>여기 소개되는 패턴들은 출발점일 뿐입니다. 자신의 제품 표면, 도구, 평가(eval), 사용자 경험 목표에 맞춰 적응시키세요.</p>
+  </section>
+
+  <section id="codex-migration">
+    <h2>Codex로 자동 마이그레이션</h2>
+    <p>Codex는 <a href="https://github.com/openai/skills/tree/main/skills/.curated/openai-docs" target="_blank" rel="noopener">OpenAI Docs Skill</a>을 통해 이 가이드의 변경 사항을 자동으로 적용해 줄 수 있습니다.</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">shell</span><button class="cb-copy" type="button">복사</button></div><pre>$openai-docs migrate this project to gpt-5.5</pre></div>
+    <p>다른 코딩 에이전트에서 이 스킬을 사용하려면 <a href="https://github.com/openai/skills/tree/main/skills/.curated/openai-docs" target="_blank" rel="noopener">OpenAI skills 저장소</a>에서 다운로드하세요.</p>
+  </section>
+
+  <section id="personality">
+    <h2>페르소나와 행동</h2>
+    <p>GPT-5.5의 기본 스타일은 <strong>효율적이고 직설적이며 과업 중심</strong>입니다. 이는 프로덕션 시스템에 유리합니다. 응답이 핵심에 머무르고, 행동을 조종하기 쉬우며, 불필요한 대화적 군더더기가 줄어듭니다.</p>
+    <p>고객 응대 어시스턴트, 지원 워크플로, 코칭 경험 등 대화형 제품을 만들 때는 <strong>페르소나(personality)</strong>와 <strong>협업 스타일(collaboration style)</strong> 양쪽을 모두 정의하세요.</p>
+    <ul>
+      <li><strong>페르소나</strong>는 어시스턴트가 어떻게 들리는지를 통제합니다 — 톤, 따뜻함, 직설성, 격식, 유머, 공감, 다듬어진 정도.</li>
+      <li><strong>협업 스타일</strong>은 어시스턴트가 어떻게 일하는지를 통제합니다 — 언제 질문할지, 언제 가정할지, 얼마나 적극적으로 움직일지, 맥락을 얼마나 제공할지, 언제 결과를 점검할지, 불확실성과 위험을 어떻게 다룰지.</li>
+    </ul>
+    <p>두 항목 모두 짧게 유지하세요. 페르소나 지시는 <strong>사용자 경험</strong>을 빚고, 협업 지시는 <strong>과업 행동</strong>을 빚어야 합니다. 그 어느 쪽도 명확한 목표·성공 기준·도구 규칙·정지 조건을 대체할 수는 없습니다.</p>
+
+    <p>차분하고 과업 지향적인 어시스턴트를 위한 페르소나 블록 예시:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre># Personality
+You are a capable collaborator: approachable, steady, and direct. Assume the user is competent and acting in good faith, and respond with patience, respect, and practical helpfulness.
+
+Prefer making progress over stopping for clarification when the request is already clear enough to attempt. Use context and reasonable assumptions to move forward. Ask for clarification only when the missing information would materially change the answer or create meaningful risk, and keep any question narrow.
+
+Stay concise without becoming curt. Give enough context for the user to understand and trust the answer, then stop. Use examples, comparisons, or simple analogies when they make the point easier to grasp. When correcting the user or disagreeing, be candid but constructive. When an error is pointed out, acknowledge it plainly and focus on fixing it.
+
+Match the user's tone within professional bounds. Avoid emojis and profanity by default, unless the user explicitly asks for that style or has clearly established it as appropriate for the conversation.</pre></div>
+
+    <p>표현이 풍부하고 협업적인 어시스턴트를 위한 페르소나 블록 예시:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre># Personality
+Adopt a vivid conversational presence: intelligent, curious, playful when appropriate, and attentive to the user's thinking. Ask good questions when the problem is blurry, then become decisive once there is enough context.
+
+Be warm, collaborative, and polished. Conversation should feel easy and alive, but not chatty for its own sake. Offer a real point of view rather than merely mirroring the user, while staying responsive to their goals and constraints.
+
+Be thoughtful and grounded when the task calls for synthesis or advice. State a clear recommendation when you have enough context, explain important tradeoffs, and name uncertainty without becoming evasive.</pre></div>
+
+    <p>좀 더 표현적인 제품에는 따뜻함, 호기심, 유머, 관점을 명시적으로 더하되 블록은 짧게 유지하세요. 페르소나는 경험을 빚는 도구이지, <strong>불분명한 목표나 누락된 과업 지시를 보충하는 수단</strong>이 아닙니다.</p>
+  </section>
+
+  <section id="preamble">
+    <h2>프리앰블로 첫 토큰까지의 시간 단축</h2>
+    <p>스트리밍 애플리케이션에서는 사용자가 <strong>첫 응답이 표시되기까지 걸리는 시간</strong>을 민감하게 느낍니다. GPT-5.5는 보이는 텍스트를 출력하기 전에 추론하거나, 계획을 세우거나, 도구 호출을 준비하느라 시간을 쓸 수 있습니다.</p>
+    <p>긴 작업이나 도구 호출이 많은 작업에서는 모델에게 <strong>짧은 프리앰블(preamble)</strong>로 시작하도록 지시하세요. 요청을 인지했음을 알리고 첫 단계를 한 줄로 밝히는 짧은 안내문입니다. 이는 실제 작업 자체를 바꾸지 않으면서도 <strong>체감 반응성</strong>을 높여 줍니다.</p>
+    <p>이 패턴은 작업이 한 단계 이상 걸리거나, 도구 호출이 필요하거나, 장시간 동작하는 에이전트 워크플로일 때 사용하세요.</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>Before any tool calls for a multi-step task, send a short user-visible update that acknowledges the request and states the first step. Keep it to one or two sentences.</pre></div>
+    <p>메시지 단계(phase)를 분리해서 노출하는 코딩 에이전트에서는 더 명시적으로 지시할 수 있습니다.</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>You must always start with an intermediary update before any content in the analysis channel if the task will require calling tools. The user update should acknowledge the request and explain your first step.</pre></div>
+  </section>
+
+  <section id="outcome-first">
+    <h2>결과 중심 프롬프트와 정지 조건</h2>
+    <p>GPT-5.5는 프롬프트가 <strong>목표 결과, 성공 기준, 제약, 사용 가능한 맥락</strong>을 정의하고 그 경로 선택은 모델에게 맡길 때 가장 강력합니다.</p>
+    <p>대부분의 작업에서는 <strong>모든 단계가 아니라 도착지</strong>를 묘사하세요. 그래야 모델이 그 작업에 맞는 검색·도구·추론 전략을 직접 고를 여지가 생깁니다.</p>
+    <p>이런 방식이 더 좋습니다:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>Resolve the customer's issue end to end.
+
+Success means:
+- the eligibility decision is made from the available policy and account data
+- any allowed action is completed before responding
+- the final answer includes completed_actions, customer_message, and blockers
+- if evidence is missing, ask for the smallest missing field</pre></div>
+
+    <p><strong>불필요한 절대 규칙은 피하세요.</strong> 옛 프롬프트들은 모델 행동을 통제하기 위해 종종 <code>ALWAYS</code>, <code>NEVER</code>, <code>must</code>, <code>only</code> 같은 강한 단어를 사용합니다. 이 단어들은 진짜 불변(invariant)에만 사용하세요 — 안전 규칙, 반드시 포함되어야 할 출력 필드, 절대로 일어나면 안 되는 행동 같은 것 말입니다. 언제 검색할지, 언제 명료화 질문을 할지, 도구를 사용할지, 계속 반복할지 같은 <strong>판단(judgment) 영역</strong>에는 결정 규칙(decision rule)을 사용하세요.</p>
+
+    <p>모든 단계가 정말 필요한 것이 아니라면, 다음과 같은 스타일은 피하세요:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">avoid</span><button class="cb-copy" type="button">복사</button></div><pre>First inspect A, then inspect B, then compare every field, then think through
+all possible exceptions, then decide which tool to call, then call the tool,
+then explain the entire process to the user.</pre></div>
+
+    <p>명시적인 정지 조건을 추가하세요:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>Resolve the user query in the fewest useful tool loops, but do not let loop minimization outrank correctness, accessible fallback evidence, calculations, or required citation tags for factual claims.
+
+After each result, ask: "Can I answer the user's core request now with useful evidence and citations for the factual claims?" If yes, answer.</pre></div>
+
+    <p>근거가 부족할 때의 행동도 정의하세요:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>Use the minimum evidence sufficient to answer correctly, cite it precisely, then stop.</pre></div>
+  </section>
+
+  <section id="formatting">
+    <h2>서식(Formatting)</h2>
+    <p>GPT-5.5는 출력 포맷과 구조에 대해 매우 잘 조종됩니다. 이해도를 높이거나 제품에 적합할 때 그 통제력을 적극 활용하세요.</p>
+    <p><code>text.verbosity</code>를 설정하고, 기대하는 출력 모양을 기술하며, 더 무거운 구조는 이해도가 분명히 좋아지거나 제품 UI가 안정된 산출물을 필요로 할 때만 사용하세요. API 기본값은 <code>medium</code>이며, 더 짧고 간결한 응답을 원할 때는 <code>low</code>를 사용하세요.</p>
+
+    <p>일반적인 대화체 서식:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>Let formatting serve comprehension. Use plain paragraphs as the default format for normal conversation, explanations, reports, documentation, and technical writeups. Keep the presentation clean and readable without making the structure feel heavier than the content.
+
+Use headers, bold text, bullets, and numbered lists sparingly. Reach for them when the user requests them, when the answer needs clear comparison or ranking, or when the information would be harder to scan as prose. Otherwise, favor short paragraphs and natural transitions.
+
+Respect formatting preferences from the user. If they ask for a terse answer, minimal formatting, no bullets, no headers, or a specific structure, follow that preference unless there is a strong reason not to.</pre></div>
+
+    <p>독자층과 길이에 대한 명시적 가이드 추가:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>Write for a senior business audience. Keep the answer under 400 words. Use short paragraphs and only include bullets when they improve scannability. Prioritize the conclusion first, then the reasoning, then caveats.</pre></div>
+
+    <p>편집·재작성·요약·고객 응대 메시지의 경우, <strong>스타일을 다듬어 달라고 요청하기 전에 무엇을 보존해야 하는지</strong>부터 모델에게 알려주세요. 분량을 늘리지 않고 윤기만 더하고 싶을 때 유용한 패턴입니다.</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>Preserve the requested artifact, length, structure, and genre first. Quietly improve clarity, flow, and correctness. Do not add new claims, extra sections, or a more promotional tone unless explicitly requested.</pre></div>
+  </section>
+
+  <section id="grounding">
+    <h2>근거·인용·검색 예산</h2>
+    <p>근거 있는 답변(grounded answer)을 원한다면, <strong>인용 동작 자체를 프롬프트의 일부</strong>로 정의해야 합니다. 어떤 주장에 근거가 필요한지, 무엇을 충분한 근거로 볼지, 근거가 없을 때 모델이 어떻게 행동해야 하는지를 정의하세요. <strong>근거가 없다는 사실이 자동으로 사실적 "아니오"가 되어선 안 됩니다.</strong> 자세한 내용과 예시는 <a href="https://developers.openai.com/api/docs/guides/citation-formatting" target="_blank" rel="noopener">citation formatting 가이드</a>를 참조하세요.</p>
+
+    <h3 id="retrieval-budget">명시적 검색 예산 추가</h3>
+    <p>검색 예산(retrieval budget)이란 <strong>검색의 정지 규칙</strong>입니다. 어느 정도의 근거가 모이면 충분한지를 모델에게 알려 줍니다.</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>For ordinary Q&amp;A, start with one broad search using short, discriminative keywords. If the top results contain enough citable support for the core request, answer from those results instead of searching again.
+
+Make another retrieval call only when:
+- The top results do not answer the core question.
+- A required fact, parameter, owner, date, ID, or source is missing.
+- The user asked for exhaustive coverage, a comparison, or a comprehensive list.
+- A specific document, URL, email, meeting, record, or code artifact must be read.
+- The answer would otherwise contain an important unsupported factual claim.
+
+Do not search again to improve phrasing, add examples, cite nonessential details, or support wording that can safely be made more generic.</pre></div>
+  </section>
+
+  <section id="creative">
+    <h2>크리에이티브 작성 가드레일</h2>
+    <p>작성(drafting) 작업에서는 <strong>어떤 주장이 출처에 기반해야 하고, 어떤 부분은 창의적으로 써도 되는지</strong>를 모델에게 알려 주세요. 슬라이드, 출시 카피, 고객용 요약, 톡 트랙(talk track), 리더십 메시지, 내러티브 프레이밍 등에서 특히 중요합니다.</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>For creative or generative requests such as slides, leadership blurbs, outbound copy, summaries for sharing, talk tracks, or narrative framing, distinguish source-backed facts from creative wording.
+
+- Use retrieved or provided facts for concrete product, customer, metric, roadmap, date, capability, and competitive claims, and cite those claims.
+- Do not invent specific names, first-party data claims, metrics, roadmap status, customer outcomes, or product capabilities to make the draft sound stronger.
+- If there is little or no citable support, write a useful generic draft with placeholders or clearly labeled assumptions rather than unsupported specifics.</pre></div>
+  </section>
+
+  <section id="frontend">
+    <h2>프론트엔드 엔지니어링과 비주얼 감각</h2>
+    <p>프론트엔드 작업의 경우 <a href="https://developers.openai.com/api/docs/guides/frontend-prompt" target="_blank" rel="noopener">예시 지시문</a>을 참고해 UI 품질을 조종하는 실용적인 방법을 익히세요. 제품·사용자 컨텍스트, 디자인 시스템 정합성, 첫 화면 사용성, 익숙한 컨트롤, 기대되는 상태 처리, 반응형 동작, 그리고 자동 생성된 UI에서 흔히 나타나는 기본값들 — 일반적인 영웅(hero) 영역, 중첩된 카드, 장식적 그라데이션, 시각적으로 노출되는 안내 문구, 깨진 레이아웃 등 — 을 어떻게 피할지를 다룹니다.</p>
+  </section>
+
+  <section id="check-work">
+    <h2>모델에게 결과를 검증하도록 지시</h2>
+    <p>검증이 가능한 영역에서는 GPT-5.5에게 <strong>결과를 점검할 수 있는 도구</strong>를 함께 제공하세요.</p>
+
+    <p>코딩 에이전트에는 구체적인 검증 명령을 요청하세요:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>After making changes, run the most relevant validation available:
+- targeted unit tests for changed behavior
+- type checks or lint checks when applicable
+- build checks for affected packages
+- a minimal smoke test when full validation is too expensive
+
+If validation cannot be run, explain why and describe the next best check.</pre></div>
+
+    <p>시각적 산출물의 경우, 렌더링 후 점검을 요청하세요:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>Render the artifact before finalizing. Inspect the rendered output for layout, clipping, spacing, missing content, and visual consistency. Revise until the rendered output matches the requirements.</pre></div>
+
+    <p>엔지니어링·기획 작업에서는 구현 계획을 추적 가능하게 만드세요:</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>For implementation plans, include:
+- requirements and where each is addressed
+- named resources, files, APIs, or systems involved
+- state transitions or data flow where relevant
+- validation commands or checks
+- failure behavior
+- privacy and security considerations
+- open questions that materially affect implementation</pre></div>
+  </section>
+
+  <section id="phase">
+    <h2>phase 파라미터</h2>
+    <p>GPT-5.4부터, 장시간 또는 도구 호출이 많은 Responses 워크플로에서는 <strong>중간 업데이트와 최종 답변을 구분</strong>하기 위해 어시스턴트 아이템에 <code>phase</code> 값을 사용할 수 있습니다. GPT-5.5도 동일한 패턴을 사용합니다.</p>
+    <p><code>previous_response_id</code>를 사용한다면 API가 이전 어시스턴트 상태를 자동으로 보존합니다. 만약 애플리케이션이 어시스턴트 출력 아이템을 직접(수동으로) 다음 요청에 다시 넣는다면, 각 원래의 <code>phase</code> 값을 정확히 보존해서 그대로 다시 전달하세요. 응답에 프리앰블, 반복적인 도구 호출, 또는 중간 업데이트 뒤에 오는 최종 답변이 함께 포함될 때 특히 중요합니다.</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt</span><button class="cb-copy" type="button">복사</button></div><pre>If manually replaying assistant items:
+- Preserve assistant `phase` values exactly.
+- Use `phase: "commentary"` for intermediate user-visible updates.
+- Use `phase: "final_answer"` for the completed answer.
+- Do not add `phase` to user messages.</pre></div>
+  </section>
+
+  <section id="structure">
+    <h2>권장 프롬프트 구조</h2>
+    <p>복잡한 프롬프트의 출발점으로 다음 구조를 사용하세요. 각 섹션은 짧게 유지하고, 행동을 실제로 바꾸는 곳에만 디테일을 더하세요.</p>
+    <div class="cb"><div class="cb-head"><span class="cb-label">prompt template</span><button class="cb-copy" type="button">복사</button></div><pre>Role: [1-2 sentences defining the model's function, context, and job]
+
+# Personality
+[tone, demeanor, and collaboration style]
+
+# Goal
+[user-visible outcome]
+
+# Success criteria
+[what must be true before the final answer]
+
+# Constraints
+[policy, safety, business, evidence, and side-effect limits]
+
+# Output
+[sections, length, and tone]
+
+# Stop rules
+[when to retry, fallback, abstain, ask, or stop]</pre></div>
+
+    <div class="callout">
+      <div class="ctitle">번역자 노트</div>
+      <p>이 페이지는 OpenAI 공식 문서 <em>Prompt guidance</em>의 GPT-5.5 섹션 전문을 한국어로 옮긴 것입니다. 코드 블록(프롬프트 예시)은 모델에 그대로 입력해야 효과를 보장할 수 있어, 번역하지 않고 <strong>원문 영어 그대로</strong> 유지했습니다. GPT-5.4 / 5.3 Codex / 5.2 / 5.1 / 5 / 4.1 등 다른 모델 가이드 번역이 필요하시면 같은 형식으로 추가해 드립니다.</p>
+    </div>
+  </section>
+
+  </article>
+</div>
+
+<footer class="bottom">
+  <div class="container">
+    원문: <a href="https://developers.openai.com/api/docs/guides/prompt-guidance?model=gpt-5.5" target="_blank" rel="noopener">developers.openai.com · Prompt guidance (GPT-5.5)</a> · 한국어 번역본은 학습·참고용이며, 공식 문서가 갱신되면 이 페이지가 뒤처질 수 있습니다.
+  </div>
+</footer>
+
+<script>
+  // Copy buttons
+  document.querySelectorAll('.cb').forEach(cb => {
+    const btn = cb.querySelector('.cb-copy');
+    const pre = cb.querySelector('pre');
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pre.textContent);
+        const orig = btn.textContent;
+        btn.textContent = '✓ 복사됨';
+        btn.classList.add('ok');
+        setTimeout(() => { btn.textContent = orig; btn.classList.remove('ok'); }, 1400);
+      } catch(e) { btn.textContent = '복사 실패'; }
+    });
+  });
+
+  // TOC scroll-spy
+  const links = [...document.querySelectorAll('#toc a')];
+  const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+  const targets = [...map.keys()].map(id => document.getElementById(id)).filter(Boolean);
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(a => a.classList.remove('active'));
+        const a = map.get(e.target.id);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+  targets.forEach(t => io.observe(t));
+</script>
+
+</body>
+</html>
